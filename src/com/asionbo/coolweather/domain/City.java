@@ -8,6 +8,7 @@ public class City {
 	private int id;
 	private String cityName;
 	private String cityCode;
+	/**关联province表的外键*/
 	private int provinceId;
 	public int getId() {
 		return id;

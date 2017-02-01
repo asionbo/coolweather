@@ -8,6 +8,7 @@ public class County {
 	private int id;
 	private String countyName;
 	private String countyCode;
+	/**关联city表的外键*/
 	private int cityId;
 	public int getId() {
 		return id;
