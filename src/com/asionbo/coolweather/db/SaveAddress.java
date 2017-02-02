@@ -28,6 +28,7 @@ public class SaveAddress {
 	private static int CITY_ID = 0;
 	private static Iterator<ProvinceInfo> itorProvince;
 	private static Iterator<CityInfo> itorCity;
+	private static Iterator<CountyInfo> itorCounty;
 
 	/** 解析Json数据 ,并保存到数据库 */
 	public static void getJsonData(MyDBUtils dbUtils, String json) {
@@ -37,7 +38,8 @@ public class SaveAddress {
 
 		itorProvince = fromJson.getList().iterator();
 
-		for (ProvinceInfo provinceInfo : fromJson.getList()) {
+		while (itorProvince.hasNext()) {
+			ProvinceInfo provinceInfo = itorProvince.next();
 			Province province = new Province();
 			province.setProvinceName(provinceInfo.getName());
 			System.out.println("province" + provinceInfo.getName());
@@ -47,8 +49,9 @@ public class SaveAddress {
 			dbUtils.saveProvince(province);
 			// }
 
-//			itorCity = itorProvince.next().getList().iterator();
-			for (CityInfo cityInfo : itorProvince.next().getList()) {
+			itorCity = provinceInfo.getList().iterator();
+			while (itorCity.hasNext()) {
+				CityInfo cityInfo = itorCity.next();
 				City city = new City();
 				city.setCityName(cityInfo.getName());
 				System.out.println("city:" + cityInfo.getName());
@@ -57,22 +60,22 @@ public class SaveAddress {
 				city.setId(CITY_ID);
 				CITY_ID++;
 
-				
 				dbUtils.saveCity(city);
-				// }
-				// }
 
-//				if (itorCity.next().getList() != null && itorCity.next().getList().iterator().hasNext()) {
-//					for (CountyInfo countyInfo : itorCity.next().getList()) {
-//						County county = new County();
-//						county.setCountyName(countyInfo.getName());
-//						county.setCountyCode(countyInfo.getCity_id());
-//						county.setCityId(CITY_ID);
-//						System.out.println("county:" + countyInfo.getName());
-//
-//						dbUtils.saveCounty(county);
-//					}
-//				}
+				if (cityInfo.getList() != null) {
+					itorCounty = cityInfo.getList().iterator();
+					while (itorCounty.hasNext()) {
+						CountyInfo countyInfo = itorCounty.next();
+						County county = new County();
+						county.setCountyName(countyInfo.getName());
+						county.setCountyCode(countyInfo.getCity_id());
+						county.setCityId(CITY_ID);
+						System.out.println("county:" + countyInfo.getName());
+
+						dbUtils.saveCounty(county);
+					}
+				}
+
 			}
 		}
 	}
