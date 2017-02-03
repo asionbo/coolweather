@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:orientation="vertical">
+    <RelativeLayout 
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/tab_bg"
+        android:layout_margin="5dp"
+        >
+
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="5dp"
+            android:paddingLeft="5dp"
+            android:text="日期"
+            android:textColor="#000"
+            android:textSize="16sp"
+             />
+
+
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:paddingTop="5dp"
+            android:paddingLeft="5dp"
+            android:text="刷新时间" 
+            android:textColor="#a000"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="地点" 
+            android:textSize="35sp"/>
+        
+    </RelativeLayout>
+    <ListView 
+        android:id="@+id/lv_weather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        ></ListView>
+
+</LinearLayout>
