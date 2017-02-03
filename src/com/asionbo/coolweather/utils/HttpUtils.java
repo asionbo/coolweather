@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
 /**
  * ========================================================================
  * 
@@ -23,7 +24,6 @@ public class HttpUtils {
 	 */
 	public static void sendHttpRequest(final String address,final HttpCallbackListener listener) {
 		new Thread(new Runnable() {
-
 			@Override
 			public void run() {
 				HttpURLConnection connection = null;
@@ -44,10 +44,12 @@ public class HttpUtils {
 						response.append(line);
 					}
 					if(listener != null){
-						listener.onFinish(response.toString());//回调onFinish()方法
+						System.out.println("成功获取服务器数据");
+						listener.onFinish(response.toString());//回调onFinish()方法,返回服务器数据
 					}
 				} catch (Exception e) {
 					System.out.println("回调错误信息");
+					e.printStackTrace();
 					if(listener != null){
 						listener.onError(e);//回调onError()方法
 					}

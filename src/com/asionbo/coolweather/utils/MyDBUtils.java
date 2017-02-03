@@ -82,14 +82,14 @@ public class MyDBUtils {
 		Cursor cursor = db.query("Province", null, null, null, null, null, null);
 		
 		if(cursor.moveToFirst()){
-			while(cursor.moveToNext()){
+			do{
 				Province province = new Province();
 				province.setId(cursor.getInt(cursor.getColumnIndex("id_")));
 				province.setProvinceName(cursor.getString(cursor.getColumnIndex("province_name")));
 				province.setProvinceCode(cursor.getString(cursor.getColumnIndex("province_code")));
 				
 				list.add(province);
-			}
+			}while(cursor.moveToNext());
 		}
 		if(cursor != null){
 			cursor.close();
@@ -132,7 +132,7 @@ public class MyDBUtils {
 				new String[]{String.valueOf(provinceId)}, null, null, null);
 		
 		if(cursor.moveToFirst()){
-			while(cursor.moveToNext()){
+			do{
 				City city = new City();
 				city.setId(cursor.getInt(cursor.getColumnIndex("id_")));
 				city.setCityName(cursor.getString(cursor.getColumnIndex("city_name")));
@@ -140,7 +140,7 @@ public class MyDBUtils {
 				city.setProvinceId(provinceId);
 				
 				list.add(city);
-			}
+			}while(cursor.moveToNext());
 		}
 		if(cursor != null){
 			cursor.close();
@@ -185,7 +185,7 @@ public class MyDBUtils {
 				new String[]{String.valueOf(cityId)}, null, null, null);
 		
 		if(cursor.moveToFirst()){
-			while(cursor.moveToNext()){
+			do{
 				County county = new County();
 				county.setId(cursor.getInt(cursor.getColumnIndex("id_")));
 				county.setCountyName(cursor.getString(cursor.getColumnIndex("county_name")));
@@ -193,7 +193,7 @@ public class MyDBUtils {
 				county.setCityId(cityId);
 				
 				list.add(county);
-			}
+			}while(cursor.moveToNext());
 		}
 		if(cursor != null){
 			cursor.close();

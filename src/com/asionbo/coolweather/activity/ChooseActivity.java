@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -12,6 +15,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.asionbo.coolweather.R;
 import com.asionbo.coolweather.db.SaveAddress;
@@ -44,6 +48,7 @@ public class ChooseActivity extends Activity{
 	protected County selectedCounty;
 	private List<City> cityList;
 	private List<County> countyList;
+	private ProgressDialog pd;
 	
 
 	@Override
@@ -99,7 +104,7 @@ public class ChooseActivity extends Activity{
 			currentLevel = LEVEL_PROVINCE;//设置当前级别为省级
 		}else{
 			//从网络取数据
-			queryFromServer(null,"province");
+			queryFromServer();
 		}
 	}
 	
@@ -118,7 +123,7 @@ public class ChooseActivity extends Activity{
 			tvTitle.setText(selectedProvince.getProvinceName());
 			currentLevel = LEVEL_CITY;
 		}else{
-			queryFromServer(selectedProvince.getProvinceCode(), "city");
+//			queryFromServer(selectedProvince.getProvinceCode(), "city");
 		}
 	}
 
@@ -136,30 +141,66 @@ public class ChooseActivity extends Activity{
 			listView.setSelection(0);
 			tvTitle.setText(selectedCity.getCityName());
 			currentLevel = LEVEL_COUNTY ;
+			
+			Intent intent = new Intent(this,WeatherActivity.class);
+			startActivity(intent);
 		}else{
-			queryFromServer(selectedCity.getCityCode(), "county");
+//			queryFromServer(selectedCity.getCityCode(), "county");
 		}
 	}
 	
 	/**
 	 * 根据传入的代号和类型从服务器上查询省市县数据
 	 */
-	private void queryFromServer(String code, String type) {
+	private void queryFromServer() {
 		String address = "http://api.yytianqi.com/citylist/id/2";
-		System.out.println("选中的地区："+code+"-------------"+type);
+		showProgressDialog(ChooseActivity.this);//显示进度框
 		HttpUtils.sendHttpRequest(address, new HttpCallbackListener() {
 			
 			@Override
 			public void onFinish(String response) {
 				SaveAddress.getJsonData(dbUtils, response);
-				queryProvinces();
+				ChooseActivity.this.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						closeProgressDialog();
+						queryProvinces();//由于要操作ui，所以必须放到主线程
+					}
+				});
 			}
 			
 			@Override
 			public void onError(Exception e) {
-				System.out.println("刷新试试");
+				ChooseActivity.this.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						closeProgressDialog();//关闭进度框
+						Toast.makeText(getApplicationContext(), "刷新重试", Toast.LENGTH_SHORT).show();
+					}
+				});
 			}
 		});
+	}
+	
+	/**
+	 * 显示进度条
+	 */
+	private void showProgressDialog(Context context){
+		if(pd == null){
+			pd = new ProgressDialog(context);
+			pd.setMessage("正在加载....");
+			pd.setCanceledOnTouchOutside(false);//不可以在外部取消
+		}
+		pd.show();
+	}
+	
+	/**
+	 * 关闭进度条
+	 */
+	private void closeProgressDialog(){
+		if(pd != null){
+			pd.dismiss();
+		}
 	}
 	
 	/**
