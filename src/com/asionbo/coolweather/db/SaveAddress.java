@@ -1,6 +1,8 @@
 package com.asionbo.coolweather.db;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import com.asionbo.coolweather.domain.AddressInfo;
 import com.asionbo.coolweather.domain.AddressInfo.CityInfo;
@@ -38,6 +40,7 @@ public class SaveAddress {
 
 		itorProvince = fromJson.getList().iterator();
 
+		List<Province> provinceList = new ArrayList<Province>();
 		while (itorProvince.hasNext()) {
 			ProvinceInfo provinceInfo = itorProvince.next();
 			Province province = new Province();
@@ -46,10 +49,11 @@ public class SaveAddress {
 			province.setProvinceCode(provinceInfo.getCity_id());
 			province.setId(PROVINCE_ID);
 			PROVINCE_ID++;
-			dbUtils.saveProvince(province);
-			// }
+			
+			provinceList.add(province);
 
 			itorCity = provinceInfo.getList().iterator();
+			List<City> cityList = new ArrayList<City>();
 			while (itorCity.hasNext()) {
 				CityInfo cityInfo = itorCity.next();
 				City city = new City();
@@ -60,10 +64,12 @@ public class SaveAddress {
 				city.setId(CITY_ID);
 				CITY_ID++;
 
-				dbUtils.saveCity(city);
+				cityList.add(city);
+				
 
 				if (cityInfo.getList() != null) {
 					itorCounty = cityInfo.getList().iterator();
+					List<County> countyList = new ArrayList<County>(); //定义一个County的集合
 					while (itorCounty.hasNext()) {
 						CountyInfo countyInfo = itorCounty.next();
 						County county = new County();
@@ -71,12 +77,14 @@ public class SaveAddress {
 						county.setCountyCode(countyInfo.getCity_id());
 						county.setCityId(CITY_ID);
 						System.out.println("county:" + countyInfo.getName());
+						countyList.add(county);
 
-						dbUtils.saveCounty(county);
 					}
+					dbUtils.saveCounty(countyList);//将county数据插入数据库
 				}
-
 			}
+			dbUtils.saveCity(cityList);//将city数据插入数据库
 		}
+		dbUtils.saveProvince(provinceList);//将province数据插入数据库
 	}
 }

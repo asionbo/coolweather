@@ -52,14 +52,24 @@ public class MyDBUtils {
 	
 	/**
 	 * 将Province实例存到数据库
-	 * @param province
+	 * @param provinceList
 	 */
-	public void saveProvince(Province province){
-		if(province != null){
-			ContentValues values = new ContentValues();
-			values.put("province_name", province.getProvinceName());
-			values.put("province_code", province.getProvinceCode());
-			db.insert("Province", null, values);
+	public void saveProvince(List<Province> provinceList){
+		if(provinceList != null){
+			db.beginTransaction();
+			try {
+				for (Province province : provinceList) {
+					ContentValues values = new ContentValues();
+					values.put("province_name", province.getProvinceName());
+					values.put("province_code", province.getProvinceCode());
+					db.insert("Province", null, values);
+				}
+				db.setTransactionSuccessful();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				db.endTransaction();
+			}
 		}
 	}
 	
@@ -89,15 +99,26 @@ public class MyDBUtils {
 
 	/**
 	 * 将City实例存储到数据库
-	 * @param city
+	 * @param cityList
 	 */
-	public void saveCity(City city){
-		if(city != null){
-			ContentValues values = new ContentValues();
-			values.put("city_name", city.getCityName());
-			values.put("city_code", city.getCityCode());
-			values.put("province_id",city.getProvinceId());
-			db.insert("City", null, values);
+	public void saveCity(List<City> cityList){
+		if(cityList != null){
+			db.beginTransaction();
+			try {
+				for (City city : cityList) {
+					ContentValues values = new ContentValues();
+					values.put("city_name", city.getCityName());
+					values.put("city_code", city.getCityCode());
+					values.put("province_id",city.getProvinceId());
+					db.insert("City", null, values);
+				}
+				db.setTransactionSuccessful();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally{
+				db.endTransaction();
+			}
+			
 		}
 	}
 	
@@ -128,16 +149,28 @@ public class MyDBUtils {
 	}
 	
 	/**
-	 * 将County实例化到数据库
-	 * @param county
+	 * 批量将County实例化到数据库
+	 * @param countyList
 	 */
-	public void saveCounty(County county){
-		if(county != null){
-			ContentValues values = new ContentValues();
-			values.put("county_name", county.getCountyName());
-			values.put("county_code", county.getCountyCode());
-			values.put("city_id", county.getCityId());
-			db.insert("County", null, values);
+	public void saveCounty(List<County> countyList){
+		
+		if(countyList != null){
+			db.beginTransaction();//开启一个事务
+			try {
+				for(County county : countyList){
+					ContentValues values = new ContentValues();
+					values.put("county_name", county.getCountyName());
+					values.put("county_code", county.getCountyCode());
+					values.put("city_id", county.getCityId());
+					db.insert("County", null, values);
+				}
+				db.setTransactionSuccessful();
+			} catch (Exception e) {
+				
+				e.printStackTrace();
+			} finally{
+				db.endTransaction();
+			}
 		}
 	}
 	
@@ -167,5 +200,4 @@ public class MyDBUtils {
 		}
 		return list;
 	}
-	
 }
