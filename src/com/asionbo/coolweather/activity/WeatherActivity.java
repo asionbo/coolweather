@@ -2,8 +2,10 @@ package com.asionbo.coolweather.activity;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -15,10 +17,11 @@ import com.asionbo.coolweather.domain.Weather;
 import com.asionbo.coolweather.domain.Weather.WeatherInfo.WeatherDetail;
 import com.asionbo.coolweather.utils.HttpCallbackListener;
 import com.asionbo.coolweather.utils.HttpUtils;
+import com.asionbo.coolweather.utils.MySharePreUtils;
 import com.asionbo.coolweather.utils.SplitStringUtils;
 import com.google.gson.Gson;
 
-public class WeatherActivity extends Activity {
+public class WeatherActivity extends ActionBarActivity {
 
 	private ListView lvWeather;//显示天气
 	private Weather weatherData = null;
@@ -28,6 +31,9 @@ public class WeatherActivity extends Activity {
 	private WeatherAdapter adapter;
 	
 	private ArrayList<WeatherDetail> weatherList;
+	private SharedPreferences sp;
+	private TextView tvTq;
+	private TextView tvQw;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,45 +44,65 @@ public class WeatherActivity extends Activity {
 
 	private void initUi() {
 		setContentView(R.layout.activity_weather);
+		
 		lvWeather = (ListView) findViewById(R.id.lv_weather);
 		tvDate = (TextView) findViewById(R.id.tv_date);
 		tvTime = (TextView) findViewById(R.id.tv_time);
 		tvAddress = (TextView) findViewById(R.id.tv_address);
-//		TextView tv = findViewById(R.id.)
+		tvTq = (TextView) findViewById(R.id.tv_tq);
+		tvQw = (TextView) findViewById(R.id.tv_qw);
+		
+		sp = this.getSharedPreferences("config", Context.MODE_PRIVATE);
+		
+		if(sp != null){
+			tvAddress.setText(sp.getString("city_name", ""));
+			String[] str = SplitStringUtils.SplitStrByOne(" ",
+					sp.getString("sj", ""));
+			System.out.println(sp.getString("sj", ""));
+			if(str.length > 0){
+				tvDate.setText(str[0]);
+				tvTime.setText(str[1]+"发布");//设置刷新时间
+			}
+			if(sp.getString("tq_1", "").equals(sp.getString("tq_2", ""))){
+				tvTq.setText(sp.getString("tq_1", ""));
+			}else{
+				tvTq.setText(sp.getString("tq_1", "")+"转"+sp.getString("tq_2", ""));
+			}
+			tvQw.setText(sp.getString("qw_2", "")+"゜~  "+sp.getString("qw_1", "")+"゜");
+		}
 		
 		adapter = new WeatherAdapter();
 	}
 	
 	private void initData() {
-//		String address = "http://10.0.2.2:8080/weather.json";
+		String address = "http://10.0.2.2:8080/weather.json";
 		String cityCode = "CH180901";
-		String address = "http://api.yytianqi.com/forecast7d?city="+cityCode+"&key=wnq294g9pchq2gbo";
+//		String address = "http://api.yytianqi.com/forecast7d?city="+cityCode+"&key=wnq294g9pchq2gbo";
 		
 		//从服务器获取天气数据
 		HttpUtils.sendHttpRequest(address, new HttpCallbackListener() {
 			
 			@Override
 			public void onFinish(String response) {
-				weatherData = phraseData(response);
+				weatherData = phraseData(WeatherActivity.this,response);
 				System.out.println("解析后："+weatherData);
 				runOnUiThread(new Runnable() {
 
 					@Override
 					public void run() {
 						if(weatherData != null){
-							System.out.println(weatherData.data.cityName);
-							tvAddress.setText(weatherData.data.cityName);//设置地区名
-							
-							String[] str = SplitStringUtils.SplitStrByOne(" ",
-									weatherData.data.sj);
-							if(str.length > 0){
-								tvDate.setText(str[0]);
-								tvTime.setText(str[1]+"刷新");//设置刷新时间
-							}
+//							System.out.println(weatherData.data.cityName);
+//							tvAddress.setText(weatherData.data.cityName);//设置地区名
+//							
+//							String[] str = SplitStringUtils.SplitStrByOne(" ",
+//									weatherData.data.sj);
+//							if(str.length > 0){
+//								tvDate.setText(str[0]);
+//								tvTime.setText(str[1]+"刷新");//设置刷新时间
+//							}
 							
 							weatherList = weatherData.data.list;
 							lvWeather.setAdapter(adapter);
-							
 						}
 					}
 				});
@@ -87,7 +113,6 @@ public class WeatherActivity extends Activity {
 				e.printStackTrace();
 			}
 		});
-		
 	}
 	
 	class WeatherAdapter extends BaseAdapter{
@@ -98,7 +123,6 @@ public class WeatherActivity extends Activity {
 
 		public WeatherAdapter() {
 			super();
-			
 		}
 
 		@Override
@@ -119,21 +143,29 @@ public class WeatherActivity extends Activity {
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if(convertView == null){
-				convertView  = View.inflate(WeatherActivity.this, R.layout.weather_list_item, null);
+				convertView = View.inflate(WeatherActivity.this, R.layout.weather_list_item, null);
 				tv_date = (TextView) convertView.findViewById(R.id.tv_date);
 				tv_info = (TextView) convertView.findViewById(R.id.tv_info);
 				tv_temp = (TextView) convertView.findViewById(R.id.tv_temp);
 			}
 			WeatherDetail item = getItem(position);
 			
-			tv_date.setText("日期："+item.date);
+			tv_date.setText(item.date);
 			if(item.tq1.equals(item.tq2)){
-				tv_info.setText("天气详情："+item.tq1);
+				tv_info.setText(item.tq1);
 			}else{
-				tv_info.setText("天气详情："+item.tq1+"转"+item.tq2);
+				tv_info.setText(item.tq1+"转"+item.tq2);
 			}
 			tv_temp.setText("最低气温："+item.qw2+"゜、最高气温："+item.qw1+"゜");
 			
+//			if(sp != null){
+//				if(sp.getString("tq_1", "").equals(sp.getString("tq_2", ""))){
+//					tv_info.setText(sp.getString("tq_1", ""));
+//				}else{
+//					tv_info.setText(sp.getString("tq_1", "")+"转"+sp.getString("tq_2", ""));
+//				}
+//				tv_temp.setText(sp.getString("qw_2", "")+"゜~"+sp.getString("qw_1", "")+"゜");
+//			}
 			return convertView;
 		}
 		
@@ -142,10 +174,28 @@ public class WeatherActivity extends Activity {
 	/**
 	 * 处理json数据
 	 * @param response
+	 * @return 
 	 */
-	protected Weather phraseData(String response) {
+	protected Weather phraseData(Context context,String response) {
 		Gson gson = new Gson();
 		Weather fromJson = gson.fromJson(response, Weather.class);
+		
+		String cityName = fromJson.data.cityName;
+		String cityId = fromJson.data.cityId;
+		String sj = fromJson.data.sj;
+//		String date = fromJson.data.list.get(0).date;
+		String fx1 = fromJson.data.list.get(0).fx1;
+		String fx2 = fromJson.data.list.get(0).fx2;
+		String qw1 = fromJson.data.list.get(0).qw1;
+		String qw2 = fromJson.data.list.get(0).qw2;
+		String tq1 = fromJson.data.list.get(0).tq1;
+		String tq2 = fromJson.data.list.get(0).tq2;
+		
+		System.out.println("test-----"+sj+fx1+tq2+cityName);
+		
+		MySharePreUtils.saveSharePre(context, sj, cityId, cityName,
+				tq1, tq2, qw1, qw2, fx1, fx2);
+		
 		return fromJson;
 	}
 }

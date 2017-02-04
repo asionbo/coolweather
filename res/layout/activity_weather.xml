@@ -5,7 +5,7 @@
     android:orientation="vertical">
     <RelativeLayout 
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="180dp"
         android:background="@drawable/tab_bg"
         android:layout_margin="5dp"
         >
@@ -39,9 +39,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true"
+            android:layout_marginTop="60dp"
             android:text="地点" 
-            android:textSize="35sp"/>
+            android:textSize="22sp"/>
+
+        <TextView
+            android:id="@+id/tv_tq"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_address"
+            android:layout_centerHorizontal="true"
+            android:text="天气"
+            android:textSize="36sp"
+            android:textColor="#000" />
+
+        <TextView
+            android:id="@+id/tv_qw"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_tq"
+            android:layout_centerHorizontal="true"
+            android:text="气温"
+            android:textSize="22sp"
+            android:textColor="#000" />
         
     </RelativeLayout>
     <ListView 
@@ -49,6 +69,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
+        android:divider="@android:color/transparent"
         ></ListView>
 
 </LinearLayout>
