@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -43,37 +44,14 @@ public class WeatherActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_weather);
 		initUi();
-		Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-//		toolbar.setTitle("test");
-//		toolbar.setLogo(R.drawable.ic_cached_white_48dp);
-		setSupportActionBar(toolbar);
 		initData();
 	}
 	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_settings:
-			Toast.makeText(this, "设置", Toast.LENGTH_SHORT).show();
-			return true;
-
-		case R.id.action_cached:
-			Toast.makeText(this, "刷新", Toast.LENGTH_SHORT).show();
-			return true;
-		default:
-			break;
-		}
-		return super.onOptionsItemSelected(item);
-	}
 
 	private void initUi() {
-//		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.activity_weather);
-//		Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-//		toolbar.setTitle("test");
-//		toolbar.setLogo(R.drawable.ic_cached_white_48dp);
-//		setSupportActionBar(toolbar);
 		
 		lvWeather = (ListView) findViewById(R.id.lv_weather);
 		tvDate = (TextView) findViewById(R.id.tv_date);
@@ -81,6 +59,8 @@ public class WeatherActivity extends AppCompatActivity {
 		tvAddress = (TextView) findViewById(R.id.tv_address);
 		tvTq = (TextView) findViewById(R.id.tv_tq);
 		tvQw = (TextView) findViewById(R.id.tv_qw);
+		
+		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer);
 		
 		sp = this.getSharedPreferences("config", Context.MODE_PRIVATE);
 		
@@ -106,7 +86,7 @@ public class WeatherActivity extends AppCompatActivity {
 	}
 	
 	private void initData() {
-		String address = "http://10.0.2.2:8080/weather.json";
+		String address = "http://10.0.3.2:8080/weather.json";
 		String cityCode = "CH180901";
 //		String address = "http://api.yytianqi.com/forecast7d?city="+cityCode+"&key=wnq294g9pchq2gbo";
 		
