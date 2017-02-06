@@ -2,15 +2,20 @@ package com.asionbo.coolweather.activity;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.asionbo.coolweather.R;
 import com.asionbo.coolweather.domain.Weather;
@@ -21,7 +26,7 @@ import com.asionbo.coolweather.utils.MySharePreUtils;
 import com.asionbo.coolweather.utils.SplitStringUtils;
 import com.google.gson.Gson;
 
-public class WeatherActivity extends ActionBarActivity {
+public class WeatherActivity extends AppCompatActivity {
 
 	private ListView lvWeather;//显示天气
 	private Weather weatherData = null;
@@ -39,11 +44,36 @@ public class WeatherActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		initUi();
+		Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+//		toolbar.setTitle("test");
+//		toolbar.setLogo(R.drawable.ic_cached_white_48dp);
+		setSupportActionBar(toolbar);
 		initData();
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_settings:
+			Toast.makeText(this, "设置", Toast.LENGTH_SHORT).show();
+			return true;
+
+		case R.id.action_cached:
+			Toast.makeText(this, "刷新", Toast.LENGTH_SHORT).show();
+			return true;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	private void initUi() {
+//		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_weather);
+//		Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+//		toolbar.setTitle("test");
+//		toolbar.setLogo(R.drawable.ic_cached_white_48dp);
+//		setSupportActionBar(toolbar);
 		
 		lvWeather = (ListView) findViewById(R.id.lv_weather);
 		tvDate = (TextView) findViewById(R.id.tv_date);
@@ -59,7 +89,7 @@ public class WeatherActivity extends ActionBarActivity {
 			String[] str = SplitStringUtils.SplitStrByOne(" ",
 					sp.getString("sj", ""));
 			System.out.println(sp.getString("sj", ""));
-			if(str.length > 0){
+			if(str.length > 1){
 				tvDate.setText(str[0]);
 				tvTime.setText(str[1]+"发布");//设置刷新时间
 			}
@@ -72,6 +102,7 @@ public class WeatherActivity extends ActionBarActivity {
 		}
 		
 		adapter = new WeatherAdapter();
+		
 	}
 	
 	private void initData() {

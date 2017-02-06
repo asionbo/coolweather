@@ -1,11 +1,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.asionbo.coolweather.MainActivity" >
+    xmlns:app="http://schemas.android.com//apk/res-auto" >
 
     <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/menu_search"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_cached"
+        android:icon="@drawable/ic_launcher"
+        android:title="@string/action_cached"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="@string/action_settings"
+        app:showAsAction="never"/>
 
 </menu>
