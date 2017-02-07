@@ -2,18 +2,19 @@ package com.asionbo.coolweather.activity;
 
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +28,7 @@ import com.asionbo.coolweather.utils.MySharePreUtils;
 import com.asionbo.coolweather.utils.SplitStringUtils;
 import com.google.gson.Gson;
 
-public class WeatherActivity extends AppCompatActivity {
+public class WeatherActivity extends AppCompatActivity implements OnClickListener{
 
 	private ListView lvWeather;//显示天气
 	private Weather weatherData = null;
@@ -40,7 +41,14 @@ public class WeatherActivity extends AppCompatActivity {
 	private SharedPreferences sp;
 	private TextView tvTq;
 	private TextView tvQw;
-
+	private ImageButton drawerToggle;//侧边栏开关
+	private ImageButton refresh;//刷新天气
+	private DrawerLayout drawerLayout;
+	private LinearLayout drawerLeft;//侧边栏布局
+	private boolean drawerOpen;//侧边栏默认关闭状态false
+	private LinearLayout llCity;//添加城市
+	private String address;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -53,6 +61,11 @@ public class WeatherActivity extends AppCompatActivity {
 
 	private void initUi() {
 		
+		//标题控件
+		drawerToggle = (ImageButton) findViewById(R.id.drawer_toggle);
+		refresh = (ImageButton) findViewById(R.id.refresh);
+		
+		//内容控件
 		lvWeather = (ListView) findViewById(R.id.lv_weather);
 		tvDate = (TextView) findViewById(R.id.tv_date);
 		tvTime = (TextView) findViewById(R.id.tv_time);
@@ -60,7 +73,19 @@ public class WeatherActivity extends AppCompatActivity {
 		tvTq = (TextView) findViewById(R.id.tv_tq);
 		tvQw = (TextView) findViewById(R.id.tv_qw);
 		
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer);
+		//侧边栏
+		drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+		drawerLeft = (LinearLayout) findViewById(R.id.drawer_left);
+		llCity = (LinearLayout) findViewById(R.id.ll_city);
+		
+		drawerOpen = drawerLayout.isDrawerOpen(drawerLeft);//侧边栏状态
+		
+		//跳转添加城市activity
+		llCity.setOnClickListener(this);
+		//侧边栏开关
+		drawerToggle.setOnClickListener(this);
+		//刷新天气
+		refresh.setOnClickListener(this);
 		
 		sp = this.getSharedPreferences("config", Context.MODE_PRIVATE);
 		
@@ -86,19 +111,25 @@ public class WeatherActivity extends AppCompatActivity {
 	}
 	
 	private void initData() {
-		String address = "http://10.0.3.2:8080/weather.json";
-		String cityCode = "CH180901";
-//		String address = "http://api.yytianqi.com/forecast7d?city="+cityCode+"&key=wnq294g9pchq2gbo";
 		
+		Intent intent = getIntent();
+		
+		String addressCode = intent.getStringExtra(getPackageName()+".code");
+		if(addressCode != null){
+			address = "http://api.yytianqi.com/forecast7d?city="+addressCode+"&key=wnq294g9pchq2gbo";
+		}else{
+			address = "http://api.yytianqi.com/forecast7d?city=CH180901&key=wnq294g9pchq2gbo";
+		}
+		System.out.println(addressCode);
+		System.out.println(address);
 		//从服务器获取天气数据
 		HttpUtils.sendHttpRequest(address, new HttpCallbackListener() {
-			
 			@Override
 			public void onFinish(String response) {
+				System.out.println("解析前："+response);
 				weatherData = phraseData(WeatherActivity.this,response);
 				System.out.println("解析后："+weatherData);
 				runOnUiThread(new Runnable() {
-
 					@Override
 					public void run() {
 						if(weatherData != null){
@@ -111,7 +142,6 @@ public class WeatherActivity extends AppCompatActivity {
 //								tvDate.setText(str[0]);
 //								tvTime.setText(str[1]+"刷新");//设置刷新时间
 //							}
-							
 							weatherList = weatherData.data.list;
 							lvWeather.setAdapter(adapter);
 						}
@@ -122,12 +152,17 @@ public class WeatherActivity extends AppCompatActivity {
 			@Override
 			public void onError(Exception e) {
 				e.printStackTrace();
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(WeatherActivity.this, "请检查网络设置", Toast.LENGTH_SHORT).show();
+					}
+				});
 			}
 		});
 	}
 	
 	class WeatherAdapter extends BaseAdapter{
-
 		private TextView tv_date;//小条目日期
 		private TextView tv_info;//详情
 		private TextView tv_temp;//温度
@@ -208,5 +243,35 @@ public class WeatherActivity extends AppCompatActivity {
 				tq1, tq2, qw1, qw2, fx1, fx2);
 		
 		return fromJson;
+	}
+
+
+	//处理各控件的点击事件
+	@Override
+	public void onClick(View v) {
+		if(v == llCity){//添加城市
+			Intent intent = new Intent(this,ChooseActivity.class);
+			startActivity(intent);
+			Toast.makeText(WeatherActivity.this, "添加", Toast.LENGTH_SHORT).show();
+		}else if(v == drawerToggle){
+			if(drawerOpen){//打开状态
+				//点击关闭
+				drawerLayout.closeDrawer(drawerLeft);
+			}else{
+				//点击打开
+				drawerLayout.openDrawer(drawerLeft);
+			}
+		}else if(v == refresh){//刷新天气
+			refreshData();
+			Toast.makeText(WeatherActivity.this, "刷新", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+
+	/**
+	 * 刷新天气
+	 */
+	private void refreshData() {
+		
 	}
 }

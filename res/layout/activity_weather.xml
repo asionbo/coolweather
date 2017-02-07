@@ -6,102 +6,8 @@
     android:background="@color/colorPrimary"
     android:orientation="vertical" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
-        android:fitsSystemWindows="true"
-        android:orientation="vertical" >
-
-        <!-- 标题 -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
-            android:background="@color/colorPrimary" >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="cool天气"
-                android:textColor="@android:color/white"
-                android:textSize="20sp" />
-        </RelativeLayout>
-        
-        <!-- 内容布局 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/white"
-            android:orientation="vertical" >
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_margin="5dp"
-                android:background="@drawable/tab_bg" >
-
-                <TextView
-                    android:id="@+id/tv_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="5dp"
-                    android:text="日期"
-                    android:textColor="#000"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/tv_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentTop="true"
-                    android:paddingLeft="5dp"
-                    android:paddingTop="5dp"
-                    android:text="刷新时间"
-                    android:textColor="#a000"
-                    android:textSize="16sp" />
-
-                <TextView
-                    android:id="@+id/tv_address"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginTop="60dp"
-                    android:text="地点"
-                    android:textSize="22sp" />
-
-                <TextView
-                    android:id="@+id/tv_tq"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/tv_address"
-                    android:layout_centerHorizontal="true"
-                    android:text="天气"
-                    android:textColor="#000"
-                    android:textSize="36sp" />
-
-                <TextView
-                    android:id="@+id/tv_qw"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/tv_tq"
-                    android:layout_centerHorizontal="true"
-                    android:text="气温"
-                    android:textColor="#000"
-                    android:textSize="22sp" />
-            </RelativeLayout>
-
-            <ListView
-                android:id="@+id/lv_weather"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:divider="@android:color/transparent" >
-            </ListView>
-        </LinearLayout>
-    </LinearLayout>
+    <!-- 主内容布局 -->
+    <include layout="@layout/weather_drawer_content"/>
     
     <!-- 侧边栏布局 -->
     <LinearLayout
@@ -116,26 +22,31 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="180dp"
-            android:scaleType="centerCrop"
+            android:scaleType="fitXY"
             android:src="@drawable/bg" />
 
         <LinearLayout
+            android:id="@+id/ll_city"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal" >
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            >
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:src="@drawable/ic_launcher" />
+                android:src="@drawable/home_72px"
+                android:scaleType="fitXY" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="我的消息"
+                android:layout_marginLeft="20dp"
+                android:text="添加城市"
                 android:textColor="@android:color/black"
                 android:textSize="15sp" />
         </LinearLayout>

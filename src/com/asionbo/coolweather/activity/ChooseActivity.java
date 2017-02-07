@@ -9,10 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +51,7 @@ public class ChooseActivity extends Activity{
 	private List<City> cityList;
 	private List<County> countyList;
 	private ProgressDialog pd;
+	private ImageButton actionBack;
 	
 
 	@Override
@@ -59,12 +62,21 @@ public class ChooseActivity extends Activity{
 		
 		listView = (ListView) findViewById(R.id.list_view);
 		tvTitle = (TextView) findViewById(R.id.tv_title);
+		actionBack = (ImageButton) findViewById(R.id.action_back);
 		
 		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
 				dataList);
 		
 		listView.setAdapter(adapter);
 		dbUtils = MyDBUtils.getInstance(this);
+		
+		//销毁当前
+		actionBack.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
 		
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -77,6 +89,12 @@ public class ChooseActivity extends Activity{
 				}else if(currentLevel == LEVEL_CITY){
 					selectedCity = cityList.get(position);
 					queryCounties();
+				}else if(currentLevel == LEVEL_COUNTY){
+					selectedCounty = countyList.get(position);
+					if(selectedCounty != null){
+						System.out.println(selectedCounty.getCountyName());
+						toShowWeather(selectedCounty.getCountyCode());
+					}
 				}
 			}
 			
@@ -142,13 +160,24 @@ public class ChooseActivity extends Activity{
 			tvTitle.setText(selectedCity.getCityName());
 			currentLevel = LEVEL_COUNTY ;
 			
-			Intent intent = new Intent(this,WeatherActivity.class);
-			startActivity(intent);
 		}else{
 //			queryFromServer(selectedCity.getCityCode(), "county");
 		}
 	}
 	
+	/**
+	 * 跳转到显示天气页面
+	 * @param code 
+	 */
+	private void toShowWeather(String code) {
+		Intent intent = new Intent(this,WeatherActivity.class);
+		intent.putExtra(getPackageName()+".code", code);
+		System.out.println(getPackageName()+".code");
+		startActivity(intent);
+	}
+
+
+
 	/**
 	 * 根据传入的代号和类型从服务器上查询省市县数据
 	 */

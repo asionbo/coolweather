@@ -48,7 +48,7 @@ public class HttpUtils {
 						listener.onFinish(response.toString());//回调onFinish()方法,返回服务器数据
 					}
 				} catch (Exception e) {
-					System.out.println("回调错误信息");
+					System.out.println("回调错误信息httpUtils");
 					e.printStackTrace();
 					if(listener != null){
 						listener.onError(e);//回调onError()方法
