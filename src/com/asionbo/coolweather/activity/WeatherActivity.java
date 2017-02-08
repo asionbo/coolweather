@@ -10,6 +10,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
@@ -48,6 +49,9 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 	private boolean drawerOpen;//侧边栏默认关闭状态false
 	private LinearLayout llCity;//添加城市
 	private String address;
+	private String current_addressCode = "CH180901";//当前页面城市id，默认luoyang
+	private String addressCode;//选中的城市id
+	private long exitTime = 0;//退出时间
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +94,7 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 		sp = this.getSharedPreferences("config", Context.MODE_PRIVATE);
 		
 		if(sp != null){
+			//设置大的view显示数据
 			tvAddress.setText(sp.getString("city_name", ""));
 			String[] str = SplitStringUtils.SplitStrByOne(" ",
 					sp.getString("sj", ""));
@@ -106,21 +111,26 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 			tvQw.setText(sp.getString("qw_2", "")+"゜~  "+sp.getString("qw_1", "")+"゜");
 		}
 		
-		adapter = new WeatherAdapter();
-		
+		if(adapter == null){
+			adapter = new WeatherAdapter();
+		}
 	}
 	
 	private void initData() {
 		
 		Intent intent = getIntent();
 		
-		String addressCode = intent.getStringExtra(getPackageName()+".code");
+		addressCode = intent.getStringExtra(getPackageName()+".code");
 		if(addressCode != null){
-			address = "http://api.yytianqi.com/forecast7d?city="+addressCode+"&key=wnq294g9pchq2gbo";
+			current_addressCode = addressCode;
+//			address = "http://api.yytianqi.com/forecast7d?city="+addressCode+"&key=wnq294g9pchq2gbo";
+			address = "http://10.0.3.2:8080/weather.json";
+			System.out.println(addressCode);
 		}else{
-			address = "http://api.yytianqi.com/forecast7d?city=CH180901&key=wnq294g9pchq2gbo";
+			address = "http://10.0.3.2:8080/weather_bad.json";
+//			address = "http://api.yytianqi.com/forecast7d?city=CH180901&key=wnq294g9pchq2gbo";
 		}
-		System.out.println(addressCode);
+		
 		System.out.println(address);
 		//从服务器获取天气数据
 		HttpUtils.sendHttpRequest(address, new HttpCallbackListener() {
@@ -133,17 +143,9 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 					@Override
 					public void run() {
 						if(weatherData != null){
-//							System.out.println(weatherData.data.cityName);
-//							tvAddress.setText(weatherData.data.cityName);//设置地区名
-//							
-//							String[] str = SplitStringUtils.SplitStrByOne(" ",
-//									weatherData.data.sj);
-//							if(str.length > 0){
-//								tvDate.setText(str[0]);
-//								tvTime.setText(str[1]+"刷新");//设置刷新时间
-//							}
 							weatherList = weatherData.data.list;
 							lvWeather.setAdapter(adapter);
+							initUi();
 						}
 					}
 				});
@@ -263,7 +265,7 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 			}
 		}else if(v == refresh){//刷新天气
 			refreshData();
-			Toast.makeText(WeatherActivity.this, "刷新", Toast.LENGTH_SHORT).show();
+//			Toast.makeText(WeatherActivity.this, "刷新", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -272,6 +274,59 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 	 * 刷新天气
 	 */
 	private void refreshData() {
-		
+		if(current_addressCode != null){
+			System.out.println("刷新：------"+current_addressCode);
+//			String current_address = "http://api.yytianqi.com/forecast7d?city="+
+//					current_addressCode+"&key=wnq294g9pchq2gbo";
+			String current_address = "http://10.0.3.2:8080/luoyang.json";
+			
+			//请求网络数据
+			HttpUtils.sendHttpRequest(current_address, new HttpCallbackListener() {
+				@Override
+				public void onFinish(String response) {
+					System.out.println("刷新解析前："+response);
+					weatherData = phraseData(WeatherActivity.this,response);
+					System.out.println("刷新解析后："+weatherData);
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							if(weatherData != null){
+								weatherList = weatherData.data.list;
+								lvWeather.setAdapter(adapter);
+								initUi();
+							}
+						}
+					});
+				}
+				@Override
+				public void onError(Exception e) {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(WeatherActivity.this, "请检查网络连接", Toast.LENGTH_SHORT).show();
+						}
+					});
+				}
+			});
+		}else{
+			Toast.makeText(WeatherActivity.this, "请选择城市", Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	//按两次退出程序
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){
+			if((System.currentTimeMillis() - exitTime) > 2000){
+				//间隔大于2s,提示再按一次
+				Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+				exitTime = System.currentTimeMillis();
+			}else{
+				finish();
+				System.exit(0);
+			}
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }

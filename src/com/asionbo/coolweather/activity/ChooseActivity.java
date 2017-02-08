@@ -172,7 +172,7 @@ public class ChooseActivity extends Activity{
 	private void toShowWeather(String code) {
 		Intent intent = new Intent(this,WeatherActivity.class);
 		intent.putExtra(getPackageName()+".code", code);
-		System.out.println(getPackageName()+".code");
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
 		startActivity(intent);
 	}
 
