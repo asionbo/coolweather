@@ -5,12 +5,15 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
@@ -29,7 +32,7 @@ import com.asionbo.coolweather.utils.MySharePreUtils;
 import com.asionbo.coolweather.utils.SplitStringUtils;
 import com.google.gson.Gson;
 
-public class WeatherActivity extends AppCompatActivity implements OnClickListener{
+public class WeatherActivity extends AppCompatActivity implements OnClickListener,OnRefreshListener{
 
 	private ListView lvWeather;//显示天气
 	private Weather weatherData = null;
@@ -52,6 +55,9 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 	private String current_addressCode = "CH180901";//当前页面城市id，默认luoyang
 	private String addressCode;//选中的城市id
 	private long exitTime = 0;//退出时间
+	private SwipeRefreshLayout mySwipe;
+	private LinearLayout llContent;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +75,10 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 		drawerToggle = (ImageButton) findViewById(R.id.drawer_toggle);
 		refresh = (ImageButton) findViewById(R.id.refresh);
 		
+		
 		//内容控件
+		llContent = (LinearLayout) findViewById(R.id.ll_content);
+		mySwipe = (SwipeRefreshLayout) llContent.findViewById(R.id.swipe_container);//下拉刷新
 		lvWeather = (ListView) findViewById(R.id.lv_weather);
 		tvDate = (TextView) findViewById(R.id.tv_date);
 		tvTime = (TextView) findViewById(R.id.tv_time);
@@ -77,10 +86,16 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 		tvTq = (TextView) findViewById(R.id.tv_tq);
 		tvQw = (TextView) findViewById(R.id.tv_qw);
 		
+		
 		//侧边栏
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		drawerLeft = (LinearLayout) findViewById(R.id.drawer_left);
 		llCity = (LinearLayout) findViewById(R.id.ll_city);
+		
+		
+		mySwipe.setColorSchemeResources(android.R.color.holo_blue_dark);//设置颜色
+		mySwipe.setDistanceToTriggerSync(40);
+		mySwipe.setOnRefreshListener(this);
 		
 		drawerOpen = drawerLayout.isDrawerOpen(drawerLeft);//侧边栏状态
 		
@@ -135,7 +150,7 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 		//从服务器获取天气数据
 		HttpUtils.sendHttpRequest(address, new HttpCallbackListener() {
 			@Override
-			public void onFinish(String response) {
+			public Weather onFinish(String response) {
 				System.out.println("解析前："+response);
 				weatherData = phraseData(WeatherActivity.this,response);
 				System.out.println("解析后："+weatherData);
@@ -149,6 +164,7 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 						}
 					}
 				});
+				return null;
 			}
 			
 			@Override
@@ -206,14 +222,6 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 			}
 			tv_temp.setText("最低气温："+item.qw2+"゜、最高气温："+item.qw1+"゜");
 			
-//			if(sp != null){
-//				if(sp.getString("tq_1", "").equals(sp.getString("tq_2", ""))){
-//					tv_info.setText(sp.getString("tq_1", ""));
-//				}else{
-//					tv_info.setText(sp.getString("tq_1", "")+"转"+sp.getString("tq_2", ""));
-//				}
-//				tv_temp.setText(sp.getString("qw_2", "")+"゜~"+sp.getString("qw_1", "")+"゜");
-//			}
 			return convertView;
 		}
 		
@@ -264,54 +272,14 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 				drawerLayout.openDrawer(drawerLeft);
 			}
 		}else if(v == refresh){//刷新天气
-			refreshData();
+//			refreshData();
+			mySwipe.setRefreshing(true);
+			onRefresh();
 //			Toast.makeText(WeatherActivity.this, "刷新", Toast.LENGTH_SHORT).show();
 		}
 	}
 
 
-	/**
-	 * 刷新天气
-	 */
-	private void refreshData() {
-		if(current_addressCode != null){
-			System.out.println("刷新：------"+current_addressCode);
-//			String current_address = "http://api.yytianqi.com/forecast7d?city="+
-//					current_addressCode+"&key=wnq294g9pchq2gbo";
-			String current_address = "http://10.0.3.2:8080/luoyang.json";
-			
-			//请求网络数据
-			HttpUtils.sendHttpRequest(current_address, new HttpCallbackListener() {
-				@Override
-				public void onFinish(String response) {
-					System.out.println("刷新解析前："+response);
-					weatherData = phraseData(WeatherActivity.this,response);
-					System.out.println("刷新解析后："+weatherData);
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if(weatherData != null){
-								weatherList = weatherData.data.list;
-								lvWeather.setAdapter(adapter);
-								initUi();
-							}
-						}
-					});
-				}
-				@Override
-				public void onError(Exception e) {
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							Toast.makeText(WeatherActivity.this, "请检查网络连接", Toast.LENGTH_SHORT).show();
-						}
-					});
-				}
-			});
-		}else{
-			Toast.makeText(WeatherActivity.this, "请选择城市", Toast.LENGTH_SHORT).show();
-		}
-	}
 	
 	//按两次退出程序
 	@Override
@@ -328,5 +296,75 @@ public class WeatherActivity extends AppCompatActivity implements OnClickListene
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+
+	/**
+	 * 下拉小listview刷新
+	 */
+	@Override
+	public void onRefresh() {
+		MyAsyncTask myTask = new MyAsyncTask();
+		if(current_addressCode != null){
+//			String current_address = "http://api.yytianqi.com/forecast7d?city="+
+//					current_addressCode+"&key=wnq294g9pchq2gbo";
+			String current_address = "http://10.0.3.2:8080/luoyang.json";
+			
+			myTask.execute(current_address);
+		}else{
+			myTask.execute("");//关闭动画
+			Toast.makeText(WeatherActivity.this, "请选择城市", Toast.LENGTH_SHORT).show();
+		}
+		
+	}
+	
+	
+	class MyAsyncTask extends AsyncTask<String,String,Weather>{
+		
+		//执行一些耗时操作
+		@Override
+		protected Weather doInBackground(String...params) {
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+			if(params[0] == null){
+				return null;
+			}
+			//请求网络数据
+			HttpUtils.sendHttpRequest(params[0], new HttpCallbackListener() {
+				@Override
+				public Weather onFinish(String response) {
+					System.out.println("刷新解析前："+response);
+					weatherData = phraseData(WeatherActivity.this,response);
+					System.out.println("刷新解析后："+weatherData);
+					return weatherData;
+				}
+				@Override
+				public void onError(Exception e) {
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							Toast.makeText(WeatherActivity.this, "请检查网络连接", Toast.LENGTH_SHORT).show();
+						}
+					});
+				}
+			});
+			return weatherData;
+		}
+		//刷新ui
+		@Override
+		protected void onPostExecute(Weather result) {
+			if(result != null){
+				weatherList = result.data.list;
+				lvWeather.setAdapter(adapter);
+				initUi();
+				System.out.println("result:"+result);
+			}else{
+				System.out.println("空result");
+			}
+			mySwipe.setRefreshing(false);//关闭刷新动画
+		}
 	}
 }

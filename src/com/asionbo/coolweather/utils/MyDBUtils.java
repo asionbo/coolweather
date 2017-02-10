@@ -1,5 +1,6 @@
 package com.asionbo.coolweather.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.asionbo.coolweather.db.MyOpenHelper;
 import com.asionbo.coolweather.domain.City;
 import com.asionbo.coolweather.domain.County;
+import com.asionbo.coolweather.domain.MyCity;
 import com.asionbo.coolweather.domain.Province;
 
 /**
@@ -199,5 +201,60 @@ public class MyDBUtils {
 			cursor.close();
 		}
 		return list;
+	}
+	
+	/**
+	 * 保存选中的地区到数据库里
+	 * @param myCityName	地区名称
+	 * @param myCityCode	地区代码
+	 */
+	public void saveMyCity(String myCityName,String myCityCode){
+		ContentValues values = new ContentValues();
+		values.put("mycity_name", myCityName);
+		values.put("mycity_code", myCityCode);
+		
+		db.insert("MyCity", null, values);
+	}
+	
+	
+	/**
+	 * 从数据库查询，用户保存的地区集合
+	 * @return	List<MyCity>
+	 */
+	public List<MyCity> loadMyCity(){
+		List<MyCity> myCityList = new ArrayList<MyCity>();
+		Cursor cursor = db.query("MyCity", null, null, null, null, null, null);
+		if(cursor.moveToFirst()){
+			do {
+				MyCity myCity = new MyCity();
+				myCity.setId(cursor.getInt(cursor.getColumnIndex("id_")));
+				myCity.setName(cursor.getString(cursor.getColumnIndex("mycity_name")));
+				myCity.setName(cursor.getString(cursor.getColumnIndex("mycity_code")));
+				
+				myCityList.add(myCity);
+			} while (cursor.moveToNext());
+		}
+		if(cursor != null){
+			cursor.close();
+		}
+		
+		return myCityList;
+	}
+	
+	/**
+	 * 删除用户保存的城市
+	 * @param code
+	 */
+	public void deleteMyCity(String code){
+		String[] whereArgs = {code};
+		db.delete("MyCity", "mycity_code=?", whereArgs);
+	}
+	
+	/**
+	 * 删除表
+	 */
+	public void dropTable(String tableName){
+		String sql = "drop table if exists"+tableName;
+		db.execSQL(sql);
 	}
 }

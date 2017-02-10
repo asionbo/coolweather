@@ -24,6 +24,7 @@ import com.asionbo.coolweather.db.SaveAddress;
 import com.asionbo.coolweather.domain.City;
 import com.asionbo.coolweather.domain.County;
 import com.asionbo.coolweather.domain.Province;
+import com.asionbo.coolweather.domain.Weather;
 import com.asionbo.coolweather.utils.HttpCallbackListener;
 import com.asionbo.coolweather.utils.HttpUtils;
 import com.asionbo.coolweather.utils.MyDBUtils;
@@ -187,7 +188,7 @@ public class ChooseActivity extends Activity{
 		HttpUtils.sendHttpRequest(address, new HttpCallbackListener() {
 			
 			@Override
-			public void onFinish(String response) {
+			public Weather onFinish(String response) {
 				SaveAddress.getJsonData(dbUtils, response);
 				ChooseActivity.this.runOnUiThread(new Runnable() {
 					@Override
@@ -196,6 +197,7 @@ public class ChooseActivity extends Activity{
 						queryProvinces();//由于要操作ui，所以必须放到主线程
 					}
 				});
+				return null;
 			}
 			
 			@Override
